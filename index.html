@@ -8,7 +8,7 @@
   <meta property="og:type" content="website">
   <meta property="og:title" content="AndyFX — seasonal effects for any website">
   <meta property="og:description" content="One script tag. AndyFX picks the right holiday from the visitor's date and locale and quietly animates — fully client-side.">
-  <meta property="og:url" content="https://aherrick.github.io/andy-fx/">
+  <meta property="og:url" content="https://andrewherrick.com/andy-fx/">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:creator" content="@andrew_herrick">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
@@ -154,6 +154,7 @@
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.themes</dt><dd class="mt-1 text-slate-400">Array of every theme name</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.detectTheme(date?, { country, fallback })</dt><dd class="mt-1 text-slate-400">Theme <code>'auto'</code> would pick for a date</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.detectCountry()</dt><dd class="mt-1 text-slate-400">Region from the browser locale, or <code>null</code></dd></div>
+            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.upcoming({ country, limit })</dt><dd class="mt-1 text-slate-400">Next holidays as <code>{ theme, start, end, now }</code>, including one underway today</dd></div>
           </dl>
         </div>
         <div class="rounded-2xl bg-white/[0.03] ring-1 ring-white/10">
@@ -212,20 +213,6 @@
         ${LABELS[theme]}
       </button>`).join('');
 
-    // Next holidays auto mode would pick, grouped into date ranges.
-    function upcoming(country, limit = 6) {
-      const ranges = [];
-      for (let i = 0; i < 366 && ranges.length <= limit; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() + i);
-        const theme = AndyFX.detectTheme(date, { country });
-        const last = ranges.at(-1);
-        if (last && last.theme === theme && last.day === i - 1) Object.assign(last, { end: date, day: i });
-        else if (theme !== 'off') ranges.push({ theme, start: date, end: date, day: i, now: i === 0 });
-      }
-      return ranges.slice(0, limit);
-    }
-
     function render() {
       const { theme, intensity, country, fallback } = fx.options;
       document.querySelectorAll('[data-theme]').forEach(b => b.setAttribute('aria-pressed', b.dataset.theme === theme));
@@ -237,11 +224,12 @@
       $('today').textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
       $('region').textContent = fx.country || 'Unknown';
 
-      $('upcoming').innerHTML = upcoming(country).map(r => `
+      $('upcoming').innerHTML = AndyFX.upcoming({ country }).map(r => `
         <li class="flex items-center justify-between py-2.5 text-sm">
           <span class="text-white">${LABELS[r.theme]}</span>
-          <span class="${r.now ? 'rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-300' : 'text-slate-400'}">
-            ${r.now ? 'Now' : shortDate(r.start) + (r.end > r.start ? ' – ' + shortDate(r.end) : '')}
+          <span class="flex items-center gap-2 text-slate-400">
+            ${r.now ? '<span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-300">Now</span>' : ''}
+            ${shortDate(r.start) + (r.end > r.start ? ' – ' + shortDate(r.end) : '')}
           </span>
         </li>`).join('') || '<li class="py-2.5 text-sm text-slate-500">No regional holidays found.</li>';
 

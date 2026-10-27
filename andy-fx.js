@@ -38,8 +38,8 @@
     { theme: 'valentines',   when: between('02-10', '02-14') },
     { theme: 'stpatricks',   when: between('03-13', '03-17'), countries: REGIONS.western },
     { theme: 'lunarnewyear', when: lunarNewYear(1, 5), countries: REGIONS.lunar },
-    { theme: 'thanksgiving', when: nthWeekday(11, 4, 4), countries: ['US'] },
-    { theme: 'thanksgiving', when: nthWeekday(10, 1, 2), countries: ['CA'] },
+    { theme: 'thanksgiving', when: nthWeekday(11, 4, 4, 1, 1), countries: ['US'] },
+    { theme: 'thanksgiving', when: nthWeekday(10, 1, 2, 2, 0), countries: ['CA'] },
     { theme: 'easter',       when: aroundEaster(5, 1) }
   ];
 
@@ -86,14 +86,22 @@
     };
   }
 
-  function nthWeekday(month, weekday, n) {
-    return date => date.getMonth() + 1 === month && date.getDay() === weekday && Math.ceil(date.getDate() / 7) === n;
+  function nthWeekday(month, weekday, n, daysBefore = 0, daysAfter = 0) {
+    return around(year => {
+      const first = new Date(year, month - 1, 1).getDay();
+      return new Date(year, month - 1, 1 + (weekday - first + 7) % 7 + (n - 1) * 7);
+    }, daysBefore, daysAfter);
   }
 
   function aroundEaster(daysBefore, daysAfter) {
+    return around(easter, daysBefore, daysAfter);
+  }
+
+  // True within daysBefore/daysAfter of the date target(year) returns.
+  function around(target, daysBefore, daysAfter) {
     return date => {
       const day = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      const diff = Math.round((day - easter(date.getFullYear())) / 864e5);
+      const diff = Math.round((day - target(date.getFullYear())) / 864e5);
       return diff >= -daysBefore && diff <= daysAfter;
     };
   }
@@ -143,6 +151,22 @@
     return SEASONS[hemisphere][Math.floor(((date.getMonth() + 1) % 12) / 3)];
   }
 
+  // Next holidays as date ranges; one already underway keeps its real start date.
+  function upcoming({ country = 'auto', limit = 6 } = {}) {
+    const c = country === 'auto' ? detectCountry() : country;
+    const today = new Date();
+    const ranges = [];
+    for (let i = -31; i < 366; i++) {
+      const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
+      const theme = detectTheme(date, { country: c });
+      const last = ranges.at(-1);
+      if (last && last.theme === theme && last.day === i - 1) Object.assign(last, { end: date, day: i });
+      else if (theme !== 'off') ranges.push({ theme, start: date, end: date, day: i, first: i });
+    }
+    return ranges.filter(r => r.day >= 0).slice(0, limit)
+      .map(({ theme, start, end, first }) => ({ theme, start, end, now: first <= 0 }));
+  }
+
   function validate(options) {
     const { theme, intensity, fallback, country } = options;
     if (theme !== 'auto' && theme !== 'off' && !THEMES[theme]) throw new Error(`AndyFX: unknown theme "${theme}"`);
@@ -159,6 +183,7 @@
     static themes = Object.keys(THEMES);
     static detectCountry = detectCountry;
     static detectTheme = detectTheme;
+    static upcoming = upcoming;
 
     constructor(options = {}) {
       this.options = validate({ theme: 'auto', country: 'auto', fallback: 'none', intensity: 'normal', ...options });
