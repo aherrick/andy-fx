@@ -4,21 +4,23 @@
 
   // ───────────── Themes: everything visual lives here ─────────────
   // motion: down | rise | cross | pop.  every: ms between sprites at "normal" intensity.
-  // Optional: color, size [min,max] px, duration [min,max] ms, extra (a rare bonus sprite).
+  // Optional: color, size [min,max] px, duration [min,max] ms, extra (rare bonus sprites).
   const THEMES = {
-    halloween:    { chars: ['🦇', '🦇', '👻', '🎃'], motion: 'cross', every: 1700 },
+    halloween:    { chars: ['🦇', '🦇', '👻', '🎃', '🕷️', '🕸️', '🍬'], motion: 'cross', every: 1700 },
     christmas:    { chars: ['❄', '❅', '❆'], motion: 'down', every: 450, color: '#d8edff',
-                    extra: { chars: ['🎅🛷'], motion: 'cross', chance: 0.012, size: [36, 36] } },
-    fireworks:    { chars: ['🎆', '🎇', '✨'], motion: 'pop', every: 700, size: [40, 90], duration: [1200, 1800] },
-    valentines:   { chars: ['♥', '💕', '💗'], motion: 'rise', every: 700, color: '#ff75aa' },
-    stpatricks:   { chars: ['☘', '🍀'], motion: 'down', every: 850, color: '#5bdfa3' },
-    easter:       { chars: ['🥚', '🐰', '🌷'], motion: 'rise', every: 1400 },
-    thanksgiving: { chars: ['🍁', '🍂', '🦃'], motion: 'down', every: 1050 },
-    lunarnewyear: { chars: ['🏮', '🧧', '✨'], motion: 'rise', every: 1100 },
-    spring:       { chars: ['🌸', '🌼', '🦋'], motion: 'down', every: 1250 },
-    summer:       { chars: ['🫧', '✨', '🦋'], motion: 'rise', every: 1700 },
-    autumn:       { chars: ['🍁', '🍂', '🍃'], motion: 'down', every: 900 },
-    winter:       { chars: ['❄', '❅', '❆'], motion: 'down', every: 570, color: '#d8edff' }
+                    extra: [{ chars: ['🎅🛷'], motion: 'cross', chance: 0.012, size: [36, 36] },
+                            { chars: ['🎁', '⭐', '⛄'], motion: 'down', chance: 0.06 }] },
+    fireworks:    { chars: ['🎆', '🎇', '✨', '🎉', '🎊'], motion: 'pop', every: 700, size: [40, 90], duration: [1200, 1800] },
+    valentines:   { chars: ['♥', '💕', '💗', '💖', '💘', '🌹'], motion: 'rise', every: 700, color: '#ff75aa' },
+    stpatricks:   { chars: ['☘', '🍀', '🌈', '💚', '🎩'], motion: 'down', every: 850, color: '#5bdfa3' },
+    easter:       { chars: ['🥚', '🐰', '🌷', '🐣', '🐥', '🌼'], motion: 'rise', every: 1400 },
+    thanksgiving: { chars: ['🍁', '🍂', '🦃', '🥧', '🌽'], motion: 'down', every: 1050 },
+    lunarnewyear: { chars: ['🏮', '🧧', '✨', '🐉', '🧨', '🍊'], motion: 'rise', every: 1100 },
+    spring:       { chars: ['🌸', '🌼', '🦋', '🌷', '🐝'], motion: 'down', every: 1250 },
+    summer:       { chars: ['☀️', '🌻', '🍉', '🐚', '🦋'], motion: 'rise', every: 1700 },
+    autumn:       { chars: ['🍁', '🍂', '🍃', '🍄', '🌰'], motion: 'down', every: 900 },
+    winter:       { chars: ['❄', '❅', '❆'], motion: 'down', every: 570, color: '#d8edff',
+                    extra: [{ chars: ['⛄'], motion: 'down', chance: 0.05 }] }
   };
 
   const REGIONS = {
@@ -244,7 +246,7 @@
 
     _spawn(theme) {
       this._sprite(theme);
-      if (theme.extra && Math.random() < theme.extra.chance) this._sprite(theme.extra);
+      for (const extra of theme.extra || []) if (Math.random() < extra.chance) this._sprite(extra);
     }
 
     _sprite({ chars, motion, color, size = [20, 34], duration = [6500, 11500] }) {
