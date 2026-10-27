@@ -68,6 +68,14 @@
   // Multiplier applied to each theme's `every`.
   const INTENSITY = { subtle: 1.8, normal: 1, party: 0.55 };
 
+  const OPT_OUT_KEY = 'andy-fx:opt-out';
+  const REDUCED_MOTION = global.matchMedia?.('(prefers-reduced-motion: reduce)');
+
+  // localStorage throws in some sandboxed iframes and privacy modes.
+  function storage(action) {
+    try { return action(global.localStorage); } catch { return null; }
+  }
+
   const CSS = `
     :host { all: initial; position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; overflow: hidden; }
     .fx { position: absolute; top: 0; left: 0; font: var(--size)/1 system-ui, sans-serif; color: var(--color, inherit);
@@ -221,15 +229,22 @@
     get theme()   { return this._theme; }
     get country() { return resolveCountry(this.options.country); }
     get running() { return Boolean(this._clock); }
+    // In memory too, so opting out still works when storage is blocked.
+    get optedOut() { return this._optedOut ??= storage(s => s.getItem(OPT_OUT_KEY)) === '1'; }
+    get paused()   { return Boolean(REDUCED_MOTION?.matches) || this.optedOut; }
 
     start() {
-      if (this.running || !global.document || global.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return this;
+      if (this.running || !global.document) return this;
+      this._onMotion = () => this._sync();
+      REDUCED_MOTION?.addEventListener('change', this._onMotion);
+      if (REDUCED_MOTION?.matches) console.info('AndyFX: paused while the OS "reduce motion" setting is on');
       this._clock = setInterval(() => this._sync(), 60000);
       this._sync();
       return this;
     }
 
     stop() {
+      REDUCED_MOTION?.removeEventListener('change', this._onMotion);
       clearInterval(this._clock);
       clearInterval(this._spawner);
       this._clock = this._spawner = null;
@@ -250,6 +265,16 @@
     setFallback(fallback)   { return this._set({ fallback }); }
     setCountry(country)     { return this._set({ country }); }
 
+    optOut() { return this._optOut(true); }
+    optIn()  { return this._optOut(false); }
+
+    _optOut(value) {
+      this._optedOut = value;
+      storage(s => value ? s.setItem(OPT_OUT_KEY, '1') : s.removeItem(OPT_OUT_KEY));
+      if (this.running) this._sync();
+      return this;
+    }
+
     _set(changes) {
       this.options = validate({ ...this.options, ...changes });
       if (this.running) this._sync();
@@ -257,7 +282,7 @@
     }
 
     _sync() {
-      const next = this.options.theme === 'auto' ? detectTheme(new Date(), this.options) : this.options.theme;
+      const next = this.paused ? 'off' : this.options.theme === 'auto' ? detectTheme(new Date(), this.options) : this.options.theme;
       if (next !== this._theme) this._stage?.replaceChildren();
       this._theme = next;
       clearInterval(this._spawner);

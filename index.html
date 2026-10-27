@@ -166,14 +166,15 @@
           <h3 class="border-b border-white/5 px-6 py-4 text-sm font-semibold text-white">Instance</h3>
           <dl class="divide-y divide-white/5 text-sm">
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">new AndyFX(options?)</dt><dd class="mt-1 text-slate-400">Create an instance; nothing renders until <code>start()</code></dd></div>
-            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.start()</dt><dd class="mt-1 text-slate-400">Begin effects (skipped if the user prefers reduced motion)</dd></div>
+            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.start()</dt><dd class="mt-1 text-slate-400">Begin effects; pauses automatically while the user prefers reduced motion or has opted out</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.stop()</dt><dd class="mt-1 text-slate-400">Pause and clear the screen</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.destroy()</dt><dd class="mt-1 text-slate-400">Stop and remove the overlay from the page</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.setTheme(name)</dt><dd class="mt-1 text-slate-400">Same values as the <code>theme</code> option</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.setCountry(code)</dt><dd class="mt-1 text-slate-400">Same values as the <code>country</code> option</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.setIntensity(level)</dt><dd class="mt-1 text-slate-400">Same values as the <code>intensity</code> option</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.setFallback(mode)</dt><dd class="mt-1 text-slate-400">Same values as the <code>fallback</code> option</dd></div>
-            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.theme · .country · .running</dt><dd class="mt-1 text-slate-400">Read-only: current theme, resolved country, and whether it's playing</dd></div>
+            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.optOut() · .optIn()</dt><dd class="mt-1 text-slate-400">Remember the visitor's choice on this site (localStorage); wire to your own button</dd></div>
+            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">.theme · .country · .running · .paused · .optedOut</dt><dd class="mt-1 text-slate-400">Read-only: current theme, resolved country, whether it's started, whether reduced motion or opt-out is holding it back, and whether the visitor opted out</dd></div>
           </dl>
         </div>
       </div>
@@ -226,10 +227,11 @@
       document.querySelectorAll('[data-intensity]').forEach(b => b.setAttribute('aria-pressed', b.dataset.intensity === intensity));
       $('country').value = country;
       $('fallback').checked = fallback === 'seasonal';
+      $('reduced').hidden = !reducedMotion.matches;
       $('toggle').textContent = fx.running ? 'Pause' : 'Play';
       const upcoming = AndyFX.upcoming({ country });
       const holiday = theme === 'auto' && upcoming[0]?.now && upcoming[0];
-      $('active').textContent = !fx.running ? 'Paused' : holiday ? holidayLabel(holiday) : LABELS[fx.theme] || 'Nothing today';
+      $('active').textContent = !fx.running || fx.paused ? 'Paused' : holiday ? holidayLabel(holiday) : LABELS[fx.theme] || 'Nothing today';
       $('today').textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
       $('region').textContent = fx.country || 'Unknown';
 
@@ -271,7 +273,8 @@
     $('country').addEventListener('change', e => { fx.setCountry(e.target.value); render(); });
     $('fallback').addEventListener('change', e => { fx.setFallback(e.target.checked ? 'seasonal' : 'none'); render(); });
 
-    $('reduced').hidden = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+    reducedMotion.addEventListener('change', render);
     $('share').hidden = !navigator.share;
     render();
   </script>
