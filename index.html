@@ -4,6 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AndyFX — seasonal effects for any website</title>
+  <meta name="description" content="One script tag. AndyFX picks the right holiday from the visitor's date and locale and quietly animates — fully client-side.">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AndyFX — seasonal effects for any website">
+  <meta property="og:description" content="One script tag. AndyFX picks the right holiday from the visitor's date and locale and quietly animates — fully client-side.">
+  <meta property="og:url" content="https://aherrick.github.io/andy-fx/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:creator" content="@andrew_herrick">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
+  <script>document.documentElement.classList.toggle('light', (localStorage.getItem('andyfx-mode') ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')) === 'light');</script>
+  <style>
+    :root { color-scheme: dark; }
+    /* Light mode remaps the few palette colors the page uses, so the markup stays dark-first */
+    .light {
+      color-scheme: light;
+      --color-white: #0f172a; --color-black: #fff;
+      --color-slate-950: #f8fafc; --color-slate-900: #f1f5f9; --color-slate-400: #475569;
+      --color-slate-300: #334155; --color-slate-200: #1e293b;
+      --color-indigo-300: #4338ca; --color-emerald-300: #047857; --color-amber-300: #b45309;
+    }
+    .light .icon-sun, :root:not(.light) .icon-moon { display: none; }
+  </style>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.jsdelivr.net/gh/aherrick/andy-fx@1/andy-fx.min.js"></script>
 </head>
@@ -15,6 +36,15 @@
       <a href="#" class="text-lg font-semibold tracking-tight text-white">✨ AndyFX</a>
       <nav class="flex items-center gap-5 text-sm">
         <a href="#api" class="text-slate-400 transition hover:text-white">API</a>
+        <div class="flex items-center gap-1">
+          <button id="share" type="button" aria-label="Share" hidden class="rounded-full p-2 text-slate-400 transition hover:bg-white/5 hover:text-white">
+            <svg viewBox="0 0 24 24" class="size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" x2="15.42" y1="13.51" y2="17.49"/><line x1="15.41" x2="8.59" y1="6.51" y2="10.49"/></svg>
+          </button>
+          <button id="mode" type="button" aria-label="Toggle light or dark mode" class="rounded-full p-2 text-slate-400 transition hover:bg-white/5 hover:text-white">
+            <svg viewBox="0 0 24 24" class="icon-sun size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+            <svg viewBox="0 0 24 24" class="icon-moon size-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+          </button>
+        </div>
         <a href="https://github.com/aherrick/andy-fx" class="flex items-center gap-2 rounded-full bg-white/5 px-3 py-1.5 font-medium text-white ring-1 ring-white/10 transition hover:bg-white/10">
           <svg viewBox="0 0 16 16" class="size-4 fill-current" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
@@ -234,12 +264,15 @@
       else if (b.dataset.intensity) fx.setIntensity(b.dataset.intensity);
       else if (b.id === 'toggle') fx.running ? fx.stop() : fx.start();
       else if (b.id === 'copy') navigator.clipboard?.writeText($('code').textContent);
+      else if (b.id === 'share') navigator.share({ title: document.title, url: location.href }).catch(() => {});
+      else if (b.id === 'mode') localStorage.setItem('andyfx-mode', document.documentElement.classList.toggle('light') ? 'light' : 'dark');
       render();
     });
     $('country').addEventListener('change', e => { fx.setCountry(e.target.value); render(); });
     $('fallback').addEventListener('change', e => { fx.setFallback(e.target.checked ? 'seasonal' : 'none'); render(); });
 
     $('reduced').hidden = !matchMedia('(prefers-reduced-motion: reduce)').matches;
+    $('share').hidden = !navigator.share;
     render();
   </script>
 </body>
