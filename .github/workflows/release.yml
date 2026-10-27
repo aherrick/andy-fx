@@ -18,6 +18,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
 
+      # jsDelivr caches the @1 alias for up to 12h; purge so it points at this release now
+      - run: curl -sS "https://purge.jsdelivr.net/gh/$GITHUB_REPOSITORY@${VERSION%%.*}/andy-fx.min.js"
+        continue-on-error: true
+
   pages:
     needs: release
     uses: ./.github/workflows/pages.yml
