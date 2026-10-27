@@ -1,0 +1,30 @@
+name: Release
+
+on: workflow_dispatch
+
+env:
+  VERSION: 1.0.${{ github.run_number }} # bump 1.0 by hand for minor/major releases
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: gh release create "v$VERSION" --target "$GITHUB_SHA" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - run: |
+          mkdir _site
+          cp andy-fx.js _site/
+          sed "s#andy-fx@[^/]*/#andy-fx@$VERSION/#g" index.html > _site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/deploy-pages@v4
