@@ -16,6 +16,9 @@
     easter:       { chars: ['🥚', '🐰', '🌷', '🐣', '🐥', '🌼'], motion: 'rise', every: 1400 },
     thanksgiving: { chars: ['🍁', '🍂', '🦃', '🥧', '🌽'], motion: 'down', every: 1050 },
     lunarnewyear: { chars: ['🏮', '🧧', '✨', '🐉', '🧨', '🍊'], motion: 'rise', every: 1100 },
+    diademuertos: { chars: ['🌼', '💀', '🕯️', '🌺', '🦋'], motion: 'down', every: 1000 },
+    diwali:       { chars: ['🪔', '✨', '🪷', '🎇', '🪔'], motion: 'rise', every: 1000 },
+    hanukkah:     { chars: ['🕎', '✡️', '🕯️', '💙', '🍩'], motion: 'rise', every: 1200 },
     spring:       { chars: ['🌸', '🌼', '🦋', '🌷', '🐝'], motion: 'down', every: 1250 },
     summer:       { chars: ['☀️', '🌻', '🍉', '🐚', '🦋'], motion: 'rise', every: 1700 },
     autumn:       { chars: ['🍁', '🍂', '🍃', '🍄', '🌰'], motion: 'down', every: 900 },
@@ -25,24 +28,35 @@
 
   const REGIONS = {
     western:  ['US', 'CA', 'GB', 'IE', 'AU', 'NZ'],
-    lunar:    ['CN', 'TW', 'HK', 'SG'],
+    lunar:    ['CN', 'TW', 'HK', 'SG', 'MY'],
     southern: ['AU', 'NZ', 'ZA', 'AR', 'CL', 'UY', 'BR']
   };
 
-  // First match wins. Omit `countries` for holidays shown everywhere.
+  // First day of Lunar New Year (MMDD) for 2024–2060. A table, because browsers' Chinese
+  // calendars are a day off in some years (2027, 2030).
+  const LUNAR_NEW_YEARS = ('0210 0129 0217 0206 0126 0213 0203 0123 0211 0131 0219 0208 0128 0215 0204 0124 0212 ' +
+    '0201 0122 0210 0130 0217 0206 0126 0214 0202 0123 0211 0201 0219 0208 0128 0215 0204 0124 0212 0202').split(' ');
+
+  // Diwali (Lakshmi Puja) for 2024–2031; browsers have no Hindu calendar.
+  const DIWALI = '1031 1020 1108 1029 1017 1105 1026 1114'.split(' ');
+
+  // First match wins. Omit `countries` for holidays shown everywhere; `except` skips countries.
   const HOLIDAYS = [
-    { theme: 'fireworks',    when: between('12-31', '01-01') },
-    { theme: 'fireworks',    when: between('07-03', '07-04'), countries: ['US'] },
-    { theme: 'fireworks',    when: between('07-01', '07-01'), countries: ['CA'] },
-    { theme: 'fireworks',    when: between('11-05', '11-05'), countries: ['GB'] },
-    { theme: 'halloween',    when: between('10-24', '10-31'), countries: REGIONS.western },
-    { theme: 'christmas',    when: between('12-01', '12-30') },
-    { theme: 'valentines',   when: between('02-10', '02-14') },
-    { theme: 'stpatricks',   when: between('03-13', '03-17'), countries: REGIONS.western },
-    { theme: 'lunarnewyear', when: lunarNewYear(0, 4), countries: REGIONS.lunar },
-    { theme: 'thanksgiving', when: nthWeekday(11, 4, 4, 1, 1), countries: ['US'] },
-    { theme: 'thanksgiving', when: nthWeekday(10, 1, 2, 2, 0), countries: ['CA'] },
-    { theme: 'easter',       when: aroundEaster(5, 1) }
+    { name: "New Year's",         theme: 'fireworks',    when: between('12-31', '01-01') },
+    { name: 'Independence Day',   theme: 'fireworks',    when: between('07-03', '07-04'), countries: ['US'] },
+    { name: 'Canada Day',         theme: 'fireworks',    when: between('07-01', '07-01'), countries: ['CA'] },
+    { name: 'Bonfire Night',      theme: 'fireworks',    when: between('11-05', '11-05'), countries: ['GB'] },
+    { name: 'Halloween',          theme: 'halloween',    when: between('10-24', '10-31'), countries: REGIONS.western },
+    { name: 'Día de los Muertos', theme: 'diademuertos', when: between('10-31', '11-02'), countries: ['MX'] },
+    { name: 'Diwali',             theme: 'diwali',       when: fromTable(DIWALI, 2, 2), countries: ['IN', 'SG', 'MY', 'NP', 'LK'] },
+    { name: 'Hanukkah',           theme: 'hanukkah',     when: around(hanukkah, 0, 7), countries: ['IL'] },
+    { name: 'Christmas',          theme: 'christmas',    when: between('12-01', '12-30'), except: ['IL'] },
+    { name: "Valentine's Day",    theme: 'valentines',   when: between('02-10', '02-14') },
+    { name: "St. Patrick's Day",  theme: 'stpatricks',   when: between('03-13', '03-17'), countries: REGIONS.western },
+    { name: 'Lunar New Year',     theme: 'lunarnewyear', when: fromTable(LUNAR_NEW_YEARS, 0, 4), countries: REGIONS.lunar },
+    { name: 'Thanksgiving',       theme: 'thanksgiving', when: nthWeekday(11, 4, 4, 1, 1), countries: ['US'] },
+    { name: 'Thanksgiving',       theme: 'thanksgiving', when: nthWeekday(10, 1, 2, 2, 0), countries: ['CA'] },
+    { name: 'Easter',             theme: 'easter',       when: aroundEaster(5, 1), except: ['CN', 'IN', 'IL', 'NP'] }
   ];
 
   // Meteorological seasons: Dec–Feb, Mar–May, Jun–Aug, Sep–Nov.
@@ -108,16 +122,20 @@
     };
   }
 
-  // First day of Lunar New Year (MMDD) for 2024–2060. A table, because browsers' Chinese
-  // calendars are a day off in some years (2027, 2030).
-  const LUNAR_NEW_YEARS = ('0210 0129 0217 0206 0126 0213 0203 0123 0211 0131 0219 0208 0128 0215 0204 0124 0212 ' +
-    '0201 0122 0210 0130 0217 0206 0126 0214 0202 0123 0211 0201 0219 0208 0128 0215 0204 0124 0212 0202').split(' ');
-
-  function lunarNewYear(daysBefore, daysAfter) {
+  // Dates from a 2024-based MMDD table; years past the table never match.
+  function fromTable(table, daysBefore, daysAfter) {
     return around(year => {
-      const mmdd = LUNAR_NEW_YEARS[year - 2024];
+      const mmdd = table[year - 2024];
       return mmdd ? new Date(year, mmdd.slice(0, 2) - 1, +mmdd.slice(2)) : new Date(NaN);
     }, daysBefore, daysAfter);
+  }
+
+  // First day of Hanukkah (25 Kislev) via the browser's Hebrew calendar, which is exact.
+  const HEBREW = new Intl.DateTimeFormat('en-u-ca-hebrew', { month: 'long', day: 'numeric' });
+  const hanukkahs = {};
+  function hanukkah(year) {
+    return hanukkahs[year] ??= Array.from({ length: 40 }, (_, i) => new Date(year, 10, 25 + i))
+      .find(date => HEBREW.format(date) === '25 Kislev') ?? new Date(NaN);
   }
 
   // Anonymous Gregorian algorithm.
@@ -145,9 +163,12 @@
 
   const resolveCountry = country => country === 'auto' ? detectCountry() : (country ?? '').toUpperCase();
 
+  const findHoliday = (date, c) =>
+    HOLIDAYS.find(h => (!h.countries || h.countries.includes(c)) && !h.except?.includes(c) && h.when(date));
+
   function detectTheme(date = new Date(), { country = 'auto', fallback = 'none' } = {}) {
     const c = resolveCountry(country);
-    const holiday = HOLIDAYS.find(h => (!h.countries || h.countries.includes(c)) && h.when(date));
+    const holiday = findHoliday(date, c);
     if (holiday) return holiday.theme;
     if (fallback !== 'seasonal') return 'off';
     const hemisphere = REGIONS.southern.includes(c) ? 'south' : 'north';
@@ -161,17 +182,17 @@
     const ranges = [];
     for (let i = -31; i < 366; i++) {
       const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
-      const theme = detectTheme(date, { country: c });
+      const holiday = findHoliday(date, c);
       const last = ranges.at(-1);
-      if (last && last.theme === theme && last.day === i - 1) Object.assign(last, { end: date, day: i });
-      else if (theme !== 'off') ranges.push({ theme, start: date, end: date, day: i, first: i });
+      if (last && last.holiday === holiday && last.day === i - 1) Object.assign(last, { end: date, day: i });
+      else if (holiday) ranges.push({ holiday, start: date, end: date, day: i, first: i });
     }
     const firstStart = {};
     return ranges.filter(r => r.day >= 0)
       // A year-long window can catch next year's start of a holiday already listed; skip it
-      .filter(r => r.first - (firstStart[r.theme] ??= r.first) < 300)
+      .filter(r => r.first - (firstStart[r.holiday.name] ??= r.first) < 300)
       .slice(0, limit)
-      .map(({ theme, start, end, first }) => ({ theme, start, end, now: first <= 0 }));
+      .map(({ holiday, start, end, first }) => ({ name: holiday.name, theme: holiday.theme, start, end, now: first <= 0 }));
   }
 
   function validate(options) {

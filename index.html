@@ -101,6 +101,8 @@
               <option value="CN">🇨🇳 China</option>
               <option value="DE">🇩🇪 Germany</option>
               <option value="IN">🇮🇳 India</option>
+              <option value="IL">🇮🇱 Israel</option>
+              <option value="MX">🇲🇽 Mexico</option>
             </select>
           </div>
         </div>
@@ -157,7 +159,7 @@
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.themes</dt><dd class="mt-1 text-slate-400">Array of every theme name</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.detectTheme(date?, { country, fallback })</dt><dd class="mt-1 text-slate-400">Theme <code>'auto'</code> would pick for a date</dd></div>
             <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.detectCountry()</dt><dd class="mt-1 text-slate-400">Region from the browser locale, or <code>null</code></dd></div>
-            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.upcoming({ country, limit })</dt><dd class="mt-1 text-slate-400">Holidays in the next year as <code>{ theme, start, end, now }</code>, including one underway today</dd></div>
+            <div class="px-6 py-3"><dt class="font-mono text-indigo-300">AndyFX.upcoming({ country, limit })</dt><dd class="mt-1 text-slate-400">Holidays in the next year as <code>{ name, theme, start, end, now }</code>, including one underway today</dd></div>
           </dl>
         </div>
         <div class="rounded-2xl bg-white/[0.03] ring-1 ring-white/10">
@@ -205,10 +207,12 @@
     const LABELS = {
       auto: '✨ Auto', halloween: '🎃 Halloween', christmas: '🎄 Christmas', fireworks: '🎆 Fireworks',
       valentines: "❤️ Valentine's", stpatricks: "☘️ St. Patrick's", easter: '🐰 Easter', thanksgiving: '🦃 Thanksgiving',
-      lunarnewyear: '🏮 Lunar New Year', spring: '🌸 Spring', summer: '☀️ Summer', autumn: '🍂 Autumn', winter: '❄️ Winter'
+      lunarnewyear: '🏮 Lunar New Year', diademuertos: '💀 Día de los Muertos', diwali: '🪔 Diwali', hanukkah: '🕎 Hanukkah',
+      spring: '🌸 Spring', summer: '☀️ Summer', autumn: '🍂 Autumn', winter: '❄️ Winter'
     };
     const $ = id => document.getElementById(id);
     const shortDate = date => date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    const holidayLabel = r => r.name ? `${LABELS[r.theme].split(' ')[0]} ${r.name}` : LABELS[r.theme];
     const fx = new AndyFX({ theme: 'auto' }).start();
 
     $('themes').innerHTML = ['auto', ...AndyFX.themes].map(theme => `
@@ -223,13 +227,15 @@
       $('country').value = country;
       $('fallback').checked = fallback === 'seasonal';
       $('toggle').textContent = fx.running ? 'Pause' : 'Play';
-      $('active').textContent = !fx.running ? 'Paused' : LABELS[fx.theme] || 'Nothing today';
+      const upcoming = AndyFX.upcoming({ country });
+      const holiday = theme === 'auto' && upcoming[0]?.now && upcoming[0];
+      $('active').textContent = !fx.running ? 'Paused' : holiday ? holidayLabel(holiday) : LABELS[fx.theme] || 'Nothing today';
       $('today').textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
       $('region').textContent = fx.country || 'Unknown';
 
-      $('upcoming').innerHTML = AndyFX.upcoming({ country }).map(r => `
+      $('upcoming').innerHTML = upcoming.map(r => `
         <li class="flex items-center justify-between py-2.5 text-sm">
-          <span class="text-white">${LABELS[r.theme]}</span>
+          <span class="text-white">${holidayLabel(r)}</span>
           <span class="flex items-center gap-2 text-slate-400">
             ${r.now ? '<span class="rounded-full bg-emerald-500/15 px-2 py-0.5 text-emerald-300">Now</span>' : ''}
             ${shortDate(r.start) + (r.end > r.start ? ' – ' + shortDate(r.end) : '')}
