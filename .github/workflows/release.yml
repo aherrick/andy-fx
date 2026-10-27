@@ -13,18 +13,11 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    environment: github-pages
     steps:
-      - uses: actions/checkout@v4
-
-      - run: gh release create "v$VERSION" --target "$GITHUB_SHA" --generate-notes
+      - run: gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --generate-notes
         env:
           GH_TOKEN: ${{ github.token }}
 
-      - run: |
-          mkdir _site
-          cp andy-fx.js _site/
-          sed "s#andy-fx@[^/]*/#andy-fx@$VERSION/#g" index.html > _site/index.html
-
-      - uses: actions/upload-pages-artifact@v3
-      - uses: actions/deploy-pages@v4
+  pages:
+    needs: release
+    uses: ./.github/workflows/pages.yml
