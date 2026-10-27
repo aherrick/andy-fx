@@ -152,8 +152,8 @@
     return SEASONS[hemisphere][Math.floor(((date.getMonth() + 1) % 12) / 3)];
   }
 
-  // Next holidays as date ranges; one already underway keeps its real start date.
-  function upcoming({ country = 'auto', limit = 6 } = {}) {
+  // Holidays over the next year as date ranges; one already underway keeps its real start date.
+  function upcoming({ country = 'auto', limit = Infinity } = {}) {
     const c = resolveCountry(country);
     const today = new Date();
     const ranges = [];
@@ -164,7 +164,11 @@
       if (last && last.theme === theme && last.day === i - 1) Object.assign(last, { end: date, day: i });
       else if (theme !== 'off') ranges.push({ theme, start: date, end: date, day: i, first: i });
     }
-    return ranges.filter(r => r.day >= 0).slice(0, limit)
+    const firstStart = {};
+    return ranges.filter(r => r.day >= 0)
+      // A year-long window can catch next year's start of a holiday already listed; skip it
+      .filter(r => r.first - (firstStart[r.theme] ??= r.first) < 300)
+      .slice(0, limit)
       .map(({ theme, start, end, first }) => ({ theme, start, end, now: first <= 0 }));
   }
 
