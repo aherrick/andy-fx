@@ -37,7 +37,7 @@
     { theme: 'christmas',    when: between('12-01', '12-30') },
     { theme: 'valentines',   when: between('02-10', '02-14') },
     { theme: 'stpatricks',   when: between('03-13', '03-17'), countries: REGIONS.western },
-    { theme: 'lunarnewyear', when: lunarNewYear(1, 5), countries: REGIONS.lunar },
+    { theme: 'lunarnewyear', when: lunarNewYear(0, 4), countries: REGIONS.lunar },
     { theme: 'thanksgiving', when: nthWeekday(11, 4, 4, 1, 1), countries: ['US'] },
     { theme: 'thanksgiving', when: nthWeekday(10, 1, 2, 2, 0), countries: ['CA'] },
     { theme: 'easter',       when: aroundEaster(5, 1) }
@@ -106,17 +106,16 @@
     };
   }
 
-  // Uses the browser's built-in Chinese calendar; false where unsupported.
-  function lunarNewYear(fromDay, toDay) {
-    return date => {
-      try {
-        const parts = new Intl.DateTimeFormat('en-u-ca-chinese', { month: 'numeric', day: 'numeric' }).formatToParts(date);
-        const get = type => parts.find(p => p.type === type)?.value;
-        return get('month') === '1' && +get('day') >= fromDay && +get('day') <= toDay;
-      } catch {
-        return false;
-      }
-    };
+  // First day of Lunar New Year (MMDD) for 2024–2060. A table, because browsers' Chinese
+  // calendars are a day off in some years (2027, 2030).
+  const LUNAR_NEW_YEARS = ('0210 0129 0217 0206 0126 0213 0203 0123 0211 0131 0219 0208 0128 0215 0204 0124 0212 ' +
+    '0201 0122 0210 0130 0217 0206 0126 0214 0202 0123 0211 0201 0219 0208 0128 0215 0204 0124 0212 0202').split(' ');
+
+  function lunarNewYear(daysBefore, daysAfter) {
+    return around(year => {
+      const mmdd = LUNAR_NEW_YEARS[year - 2024];
+      return mmdd ? new Date(year, mmdd.slice(0, 2) - 1, +mmdd.slice(2)) : new Date(NaN);
+    }, daysBefore, daysAfter);
   }
 
   // Anonymous Gregorian algorithm.
@@ -142,8 +141,10 @@
     return null;
   }
 
+  const resolveCountry = country => country === 'auto' ? detectCountry() : (country ?? '').toUpperCase();
+
   function detectTheme(date = new Date(), { country = 'auto', fallback = 'none' } = {}) {
-    const c = country === 'auto' ? detectCountry() : country;
+    const c = resolveCountry(country);
     const holiday = HOLIDAYS.find(h => (!h.countries || h.countries.includes(c)) && h.when(date));
     if (holiday) return holiday.theme;
     if (fallback !== 'seasonal') return 'off';
@@ -153,7 +154,7 @@
 
   // Next holidays as date ranges; one already underway keeps its real start date.
   function upcoming({ country = 'auto', limit = 6 } = {}) {
-    const c = country === 'auto' ? detectCountry() : country;
+    const c = resolveCountry(country);
     const today = new Date();
     const ranges = [];
     for (let i = -31; i < 366; i++) {
@@ -191,7 +192,7 @@
     }
 
     get theme()   { return this._theme; }
-    get country() { return this.options.country === 'auto' ? detectCountry() : this.options.country; }
+    get country() { return resolveCountry(this.options.country); }
     get running() { return Boolean(this._clock); }
 
     start() {

@@ -9,7 +9,8 @@
   <meta property="og:title" content="AndyFX — seasonal effects for any website">
   <meta property="og:description" content="One script tag. AndyFX picks the right holiday from the visitor's date and locale and quietly animates — fully client-side.">
   <meta property="og:url" content="https://andrewherrick.com/andy-fx/">
-  <meta name="twitter:card" content="summary">
+  <meta property="og:image" content="https://andrewherrick.com/andy-fx/og.png">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:creator" content="@andrew_herrick">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✨</text></svg>">
   <script>document.documentElement.classList.toggle('light', (localStorage.getItem('andyfx-mode') ?? (matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark')) === 'light');</script>
@@ -27,6 +28,8 @@
   </style>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.jsdelivr.net/gh/aherrick/andy-fx@1/andy-fx.min.js"></script>
+  <!-- Opened from disk or localhost: use the working copy so library edits show up -->
+  <script>if (location.protocol === 'file:' || location.hostname === 'localhost') document.write('<script src="andy-fx.js"><\/script>');</script>
 </head>
 <body class="relative isolate min-h-screen bg-slate-950 text-slate-300 antialiased">
   <div class="absolute inset-x-0 top-0 -z-10 h-[36rem] bg-linear-to-b from-indigo-600/25 via-fuchsia-600/10 to-transparent"></div>
@@ -251,7 +254,10 @@
       if (b.dataset.theme) fx.setTheme(b.dataset.theme).start();
       else if (b.dataset.intensity) fx.setIntensity(b.dataset.intensity);
       else if (b.id === 'toggle') fx.running ? fx.stop() : fx.start();
-      else if (b.id === 'copy') navigator.clipboard?.writeText($('code').textContent);
+      else if (b.id === 'copy') navigator.clipboard?.writeText($('code').textContent).then(() => {
+        b.textContent = 'Copied!';
+        setTimeout(() => b.textContent = 'Copy', 1500);
+      });
       else if (b.id === 'share') navigator.share({ title: document.title, url: location.href }).catch(() => {});
       else if (b.id === 'mode') localStorage.setItem('andyfx-mode', document.documentElement.classList.toggle('light') ? 'light' : 'dark');
       render();
