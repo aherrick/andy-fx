@@ -184,23 +184,33 @@
   }
 
   // Holidays over the next year as date ranges; one already underway keeps its real start date.
+  // country 'all' lists every holiday, ignoring regions.
   function upcoming({ country = 'auto', limit = Infinity } = {}) {
     const c = resolveCountry(country);
     const today = new Date();
-    const ranges = [];
+    const ranges = [], latest = new Map(), firstStart = new Map();
     for (let i = -31; i < 366; i++) {
       const date = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i);
-      const holiday = findHoliday(date, c);
-      const last = ranges.at(-1);
-      if (last && last.holiday === holiday && last.day === i - 1) Object.assign(last, { end: date, day: i });
-      else if (holiday) ranges.push({ holiday, start: date, end: date, day: i, first: i });
+      const holidays = c === 'ALL' ? HOLIDAYS.filter(h => h.when(date)) : [findHoliday(date, c)].filter(Boolean);
+      for (const holiday of holidays) {
+        const last = latest.get(holiday);
+        if (last?.day === i - 1) Object.assign(last, { end: date, day: i });
+        else {
+          const range = { holiday, start: date, end: date, day: i, first: i };
+          latest.set(holiday, range);
+          ranges.push(range);
+        }
+      }
     }
-    const firstStart = {};
     return ranges.filter(r => r.day >= 0)
       // A year-long window can catch next year's start of a holiday already listed; skip it
-      .filter(r => r.first - (firstStart[r.holiday.name] ??= r.first) < 300)
+      .filter(r => {
+        if (!firstStart.has(r.holiday)) firstStart.set(r.holiday, r.first);
+        return r.first - firstStart.get(r.holiday) < 300;
+      })
       .slice(0, limit)
-      .map(({ holiday, start, end, first }) => ({ name: holiday.name, theme: holiday.theme, start, end, now: first <= 0 }));
+      .map(({ holiday, start, end, first }) =>
+        ({ name: holiday.name, theme: holiday.theme, countries: holiday.countries ?? null, start, end, now: first <= 0 }));
   }
 
   function validate(options) {
