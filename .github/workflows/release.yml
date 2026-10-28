@@ -33,11 +33,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # Pin the demo page to the version just released
+      # Pin the page to this release and swap Tailwind's in-browser compiler for prebuilt CSS
       - run: |
           mkdir _site
           cp og.png _site/
-          sed "s#andy-fx@[^/]*/#andy-fx@${VERSION}/#g" index.html > _site/index.html
+          sed -e "s#andy-fx@[^/]*/#andy-fx@${VERSION}/#g" \
+              -e 's#<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>#<link rel="stylesheet" href="tailwind.css">#' \
+              index.html > _site/index.html
+          grep -q 'href="tailwind.css"' _site/index.html
+          npm install --no-save tailwindcss@4 @tailwindcss/cli@4
+          npx @tailwindcss/cli -o _site/tailwind.css --minify
 
       - uses: actions/upload-pages-artifact@v3
       - uses: actions/deploy-pages@v4

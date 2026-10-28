@@ -51,9 +51,9 @@
     { name: 'Diwali',             theme: 'diwali',       when: fromTable(DIWALI, 2, 2), countries: ['IN', 'SG', 'MY', 'NP', 'LK'] },
     { name: 'Hanukkah',           theme: 'hanukkah',     when: around(hanukkah, 0, 7), countries: ['IL'] },
     { name: 'Christmas',          theme: 'christmas',    when: between('12-01', '12-30'), except: ['IL'] },
+    { name: 'Lunar New Year',     theme: 'lunarnewyear', when: fromTable(LUNAR_NEW_YEARS, 0, 4), countries: REGIONS.lunar },
     { name: "Valentine's Day",    theme: 'valentines',   when: between('02-10', '02-14') },
     { name: "St. Patrick's Day",  theme: 'stpatricks',   when: between('03-13', '03-17'), countries: REGIONS.western },
-    { name: 'Lunar New Year',     theme: 'lunarnewyear', when: fromTable(LUNAR_NEW_YEARS, 0, 4), countries: REGIONS.lunar },
     { name: 'Thanksgiving',       theme: 'thanksgiving', when: nthWeekday(11, 4, 4, 1, 1), countries: ['US'] },
     { name: 'Thanksgiving',       theme: 'thanksgiving', when: nthWeekday(10, 1, 2, 2, 0), countries: ['CA'] },
     { name: 'Easter',             theme: 'easter',       when: aroundEaster(5, 1), except: ['CN', 'IN', 'IL', 'NP'] }

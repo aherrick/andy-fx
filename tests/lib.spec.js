@@ -11,6 +11,7 @@ test('picks holidays by date and country', () => {
   expect(theme(2025, 11, 27, { country: 'US' })).toBe('thanksgiving');
   expect(theme(2025, 4, 20, { country: 'US' })).toBe('easter');
   expect(theme(2025, 1, 29, { country: 'CN' })).toBe('lunarnewyear');
+  expect(theme(2043, 2, 10, { country: 'CN' })).toBe('lunarnewyear'); // lands in Valentine's week
   expect(theme(2026, 1, 1, { country: 'DE' })).toBe('fireworks');
 });
 
@@ -23,6 +24,17 @@ test('skips holidays outside their regions', () => {
 test('seasonal fallback follows the hemisphere', () => {
   expect(theme(2025, 7, 15, { country: 'US', fallback: 'seasonal' })).toBe('summer');
   expect(theme(2025, 7, 15, { country: 'AU', fallback: 'seasonal' })).toBe('winter');
+});
+
+// Fails two years before a hard-coded date table runs out, as a reminder to extend it
+test('date tables cover the next few years', () => {
+  const yearHas = (year, country, want) =>
+    Array.from({ length: 365 }, (_, i) => theme(year, 1, 1 + i, { country })).includes(want);
+  const thisYear = new Date().getFullYear();
+  for (let year = thisYear; year <= thisYear + 2; year++) {
+    expect(yearHas(year, 'IN', 'diwali'), `Diwali ${year}`).toBe(true);
+    expect(yearHas(year, 'CN', 'lunarnewyear'), `Lunar New Year ${year}`).toBe(true);
+  }
 });
 
 test('validates options', () => {

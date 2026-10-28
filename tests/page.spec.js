@@ -22,7 +22,8 @@ test('picking a theme shows it and spawns sprites', async ({ page }) => {
   await christmas.click();
   await expect(christmas).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#active')).toHaveText('🎄 Christmas');
-  await expect(page.locator('#badge')).toHaveText('Manual');
+  await expect(page.locator('#badge')).toBeHidden();
+  await expect(page.locator('#schedule')).toBeHidden();
   await expect(page.locator('#code')).toContainText("theme: 'christmas'");
   await expect(page.locator('.fx').first()).toBeAttached();
 });
@@ -36,6 +37,13 @@ test('pause clears sprites and reset goes back to auto', async ({ page }) => {
   await page.locator('#reset').click();
   await expect(page.locator('#badge')).toHaveText('Auto');
   await expect(page.locator('#why')).toHaveText('');
+});
+
+test('changing country while paused stays paused', async ({ page }) => {
+  await page.goto(url);
+  await page.locator('#toggle').click();
+  await page.locator('#country').selectOption('CA');
+  await expect(page.locator('#why')).toHaveText('Paused');
 });
 
 test('respects reduced motion', async ({ page }) => {

@@ -1,6 +1,7 @@
 # ✨ AndyFX
 
 [![Release](https://img.shields.io/github/v/release/aherrick/andy-fx)](https://github.com/aherrick/andy-fx/releases)
+[![Tests](https://github.com/aherrick/andy-fx/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/aherrick/andy-fx/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Seasonal effects for any website. One script tag — AndyFX reads the visitor's date and browser locale, picks the right holiday, and quietly animates. Fully client-side: no APIs, no tracking, no setup.
