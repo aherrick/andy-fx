@@ -27,6 +27,14 @@ Seasonal effects for any website. One script tag — AndyFX reads the visitor's 
 
 Respects `prefers-reduced-motion`, even if it changes mid-visit. Give visitors an off switch with `fx.optOut()` / `fx.optIn()`, which is remembered per site. See the [demo page](https://aherrick.github.io/andy-fx/#api) for the full API.
 
+## Tests
+
+```sh
+npm install
+npx playwright install chromium
+npm test
+```
+
 ## License
 
 [MIT](LICENSE)
