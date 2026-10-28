@@ -12,7 +12,7 @@ Seasonal effects for any website. One script tag — AndyFX reads the visitor's 
 ```html
 <script src="https://cdn.jsdelivr.net/gh/aherrick/andy-fx@1/andy-fx.min.js"></script>
 <script>
-  new AndyFX().start();
+  const fx = new AndyFX().start();
 </script>
 ```
 
