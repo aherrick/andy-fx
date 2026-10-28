@@ -141,7 +141,7 @@
               <button data-scope="all" class="rounded-md px-3 py-1 text-xs text-slate-400 transition aria-pressed:bg-white aria-pressed:text-slate-900">All</button>
             </div>
           </div>
-          <ul id="upcoming" class="mt-4 divide-y divide-white/5"></ul>
+          <ul id="upcoming" class="mt-4 divide-y divide-white/5 transition"></ul>
         </div>
       </div>
     </section>
@@ -219,7 +219,7 @@
     const LABELS = {
       halloween: '🎃 Halloween', christmas: '🎄 Christmas', fireworks: '🎆 Fireworks',
       valentines: "❤️ Valentine's", stpatricks: "☘️ St. Patrick's", easter: '🐰 Easter', thanksgiving: '🦃 Thanksgiving',
-      lunarnewyear: '🏮 Lunar New Year', diademuertos: '💀 Día de los Muertos', diwali: '🪔 Diwali', hanukkah: '🕎 Hanukkah',
+      lunarnewyear: '🏮 Lunar New Year', diademuertos: '💀 Día de Muertos', diwali: '🪔 Diwali', hanukkah: '🕎 Hanukkah',
       spring: '🌸 Spring', summer: '☀️ Summer', autumn: '🍂 Autumn', winter: '❄️ Winter'
     };
     const $ = id => document.getElementById(id);
@@ -244,6 +244,7 @@
       $('country').value = country;
       $('fallback').checked = fallback === 'seasonal';
       $('auto-settings').classList.toggle('opacity-40', theme !== 'auto');
+      $('upcoming').classList.toggle('opacity-40', theme !== 'auto');
       $('toggle').textContent = fx.running ? 'Pause' : 'Play';
       const upcoming = AndyFX.upcoming({ country });
       const holiday = theme === 'auto' && upcoming[0]?.now && upcoming[0];
