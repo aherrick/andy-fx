@@ -110,7 +110,7 @@
               </span>
             </summary>
             <div class="border-t border-white/5 px-3 py-1">
-              <ul id="schedule-list" class="max-h-72 divide-y divide-white/5 overflow-y-auto pr-2 [scrollbar-color:rgb(255_255_255/0.15)_transparent] [scrollbar-width:thin]"></ul>
+              <ul id="schedule-list" class="max-h-72 divide-y divide-white/5 overflow-y-auto pr-2 [scrollbar-color:color-mix(in_srgb,var(--color-white)_15%,transparent)_transparent] [scrollbar-width:thin]"></ul>
             </div>
           </details>
         </div>
@@ -273,13 +273,13 @@
       $('toggle').textContent = fx.running ? 'Pause' : 'Play';
       $('badge').textContent = auto ? 'Auto' : 'Manual';
       $('today').textContent = new Date().toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
-      $('why').textContent = !fx.running ? '' : reducedMotion.matches ? 'Reduced motion is on' : fx.optedOut ? 'Visitor opted out' : '';
+      $('why').textContent = !fx.running ? 'Paused' : reducedMotion.matches ? 'Paused · reduced motion is on' : fx.optedOut ? 'Paused · visitor opted out' : '';
 
       const rows = auto ? schedule(country, fallback) : [];
       const current = rows.find(r => r.now);
       const next = rows.find(r => !r.now);
       const countryName = fx.country ? regionNames.of(fx.country) : 'Unknown';
-      $('active').textContent = !fx.running || fx.paused ? 'Paused' : auto ? current?.label ?? 'Nothing today' : LABELS[theme];
+      $('active').textContent = auto ? current?.label ?? 'Nothing today' : LABELS[theme];
       $('subtitle').textContent = `${current ? (current.season ? 'Seasonal fallback' : 'Holiday') : 'No holiday today'} · ${countryName}`;
       $('region').textContent = countryName;
       $('next').textContent = next ? `Next: ${next.label} · ${shortDate(next.start)}` : 'Nothing else this year';
