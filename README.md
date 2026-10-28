@@ -6,7 +6,7 @@
 
 Seasonal effects for any website. One script tag — AndyFX reads the visitor's date and browser locale, picks the right holiday, and quietly animates. Fully client-side: no APIs, no tracking, no setup.
 
-**[Live demo & playground →](https://aherrick.github.io/andy-fx/)**
+**[Live demo & playground →](https://andrewherrick.com/andy-fx/)**
 
 ## Usage
 
@@ -26,7 +26,7 @@ Seasonal effects for any website. One script tag — AndyFX reads the visitor's 
 | `intensity` | `'normal'` | `'subtle'`, `'normal'`, `'party'`                          |
 | `fallback`  | `'none'`   | `'seasonal'` shows the season when there's no holiday      |
 
-Respects `prefers-reduced-motion`, even if it changes mid-visit. Give visitors an off switch with `fx.optOut()` / `fx.optIn()`, which is remembered per site. See the [demo page](https://aherrick.github.io/andy-fx/#api) for the full API.
+Respects `prefers-reduced-motion`, even if it changes mid-visit. Give visitors an off switch with `fx.optOut()` / `fx.optIn()`, which is remembered per site. See the [demo page](https://andrewherrick.com/andy-fx/#api) for the full API.
 
 ## Tests
 
